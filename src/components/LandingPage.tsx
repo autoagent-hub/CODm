@@ -8,13 +8,8 @@ import {
 } from 'lucide-react';
 
 export interface LandingPageProps {
-  currentUser: UserProfile;
   matches: Match[];
   onOpenAuth: (mode?: 'signin' | 'signup') => void;
-  onOpenCreateBet: (preselectedMode?: string, stake?: number) => void;
-  onNavigateToWallet: () => void;
-  onNavigateToFunding: () => void;
-  onJoinMatch: (match: Match) => void;
 }
 
 const FAQS = [
@@ -45,13 +40,8 @@ const FAQS = [
 ];
 
 export const LandingPage: React.FC<LandingPageProps> = ({
-  currentUser,
   matches,
   onOpenAuth,
-  onOpenCreateBet,
-  onNavigateToWallet,
-  onNavigateToFunding,
-  onJoinMatch,
 }) => {
   const [activeFormatTab, setActiveFormatTab] = useState<'1v1' | 'normal'>('1v1');
   const [calcStake, setCalcStake] = useState<number>(1000);
@@ -60,7 +50,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   // Filter open challenges
   const openChallenges = matches.filter(
-    (m) => m.status === 'PENDING_OPPONENT' && m.creator.id !== currentUser.id
+    (m) => m.status === 'PENDING_OPPONENT'
   );
 
   const toggleFaq = (idx: number) => {
@@ -278,18 +268,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
-                onClick={() => onOpenCreateBet(undefined, calcStake)}
+                onClick={() => onOpenAuth('signup')}
                 className="px-6 py-3 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-black rounded-xl text-xs sm:text-sm shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
               >
                 <Swords className="w-4 h-4" />
-                <span>Create Bet for ₦{calcStake.toLocaleString()}</span>
+                <span>Sign Up to Stake ₦{calcStake.toLocaleString()}</span>
               </button>
 
               <button
-                onClick={() => onOpenAuth('signup')}
+                onClick={() => onOpenAuth('signin')}
                 className="px-5 py-3 bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-xl text-xs sm:text-sm transition-colors cursor-pointer"
               >
-                <span>Sign Up to Stake →</span>
+                <span>Sign In →</span>
               </button>
             </div>
           </div>
@@ -351,11 +341,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             <div className="relative z-10 pt-2">
               <button
-                onClick={() => onOpenCreateBet('Solo 1v1 Duel')}
+                onClick={() => onOpenAuth('signup')}
                 className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-black rounded-2xl text-sm shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-2 uppercase"
               >
                 <Swords className="w-4 h-4 stroke-[2.5]" />
-                <span>Create Solo 1v1 Bet (₦1,000+)</span>
+                <span>Create Solo 1v1 Bet (Sign Up)</span>
               </button>
             </div>
           </div>
@@ -399,11 +389,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             <div className="relative z-10 pt-2">
               <button
-                onClick={() => onOpenCreateBet('Squad Team Match')}
+                onClick={() => onOpenAuth('signup')}
                 className="w-full py-4 bg-emerald-400 hover:bg-emerald-300 text-neutral-950 font-black rounded-2xl text-sm shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-2 uppercase"
               >
                 <Users className="w-4 h-4 stroke-[2.5]" />
-                <span>Create Squad Team Bet (₦1,000+)</span>
+                <span>Create Squad Team Bet (Sign Up)</span>
               </button>
             </div>
           </div>
@@ -443,10 +433,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               Be the first to create a ₦1,000 wager! Your room code will be generated instantly to share with opponents.
             </p>
             <button
-              onClick={() => onOpenCreateBet()}
+              onClick={() => onOpenAuth('signup')}
               className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold rounded-xl text-xs transition-all cursor-pointer"
             >
-              Create New Bet Now
+              Sign Up to Create First Bet
             </button>
           </div>
         ) : (
@@ -485,11 +475,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </div>
 
                   <button
-                    onClick={() => onJoinMatch(match)}
+                    onClick={() => onOpenAuth('signup')}
                     className="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-black rounded-xl text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <Swords className="w-3.5 h-3.5" />
-                    <span>Accept Challenge & Lock ₦{match.stakeAmount.toLocaleString()}</span>
+                    <span>Sign In to Accept & Lock ₦{match.stakeAmount.toLocaleString()}</span>
                   </button>
                 </div>
               );
@@ -613,15 +603,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               onClick={() => onOpenAuth('signin')}
               className="px-7 py-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-neutral-200 hover:text-white font-bold rounded-2xl text-base transition-all cursor-pointer flex items-center gap-2"
             >
-              <span>Sign In</span>
-            </button>
-
-            <button
-              onClick={() => onOpenCreateBet()}
-              className="px-7 py-4 bg-neutral-900 hover:bg-neutral-800 border border-amber-500/40 text-amber-400 font-bold rounded-2xl text-base transition-all cursor-pointer flex items-center gap-2"
-            >
-              <Swords className="w-5 h-5" />
-              <span>Create Wager (₦1,000+)</span>
+              <span>Sign In to Account</span>
             </button>
           </div>
         </div>

@@ -199,45 +199,11 @@ export default function App() {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col bg-tactical-grid selection:bg-amber-500 selection:text-black">
         <LandingPage
-          currentUser={currentUser}
           matches={matches}
           onOpenAuth={(mode) => {
             setAuthMode(mode || 'signup');
             setCurrentTab('auth');
           }}
-          onOpenCreateBet={handleOpenCreateBet}
-          onNavigateToWallet={() => setCurrentTab('wallet_dashboard')}
-          onNavigateToFunding={() => setCurrentTab('funding')}
-          onJoinMatch={(match) => handleJoinMatch(match.id, currentUser.id)}
-        />
-
-        {/* Bet Creation Modal (Supports 1v1 & Normal Matches) */}
-        <CreateBetModal
-          currentUser={currentUser}
-          isOpen={isCreateBetOpen}
-          initialMode={createBetInitialMode}
-          initialStake={createBetInitialStake}
-          onClose={() => {
-            setIsCreateBetOpen(false);
-            setCreateBetInitialMode(undefined);
-            setCreateBetInitialStake(undefined);
-          }}
-          onSubmit={handleCreateBet}
-          onOpenWallet={() => {
-            setIsCreateBetOpen(false);
-            setCurrentTab('funding');
-          }}
-        />
-
-        {/* Opponent Onboarding Modal */}
-        <OpponentOnboardingModal
-          match={onboardingTargetMatch}
-          isOpen={isOnboardingModalOpen}
-          onClose={() => {
-            setIsOnboardingModalOpen(false);
-            setOnboardingTargetMatch(null);
-          }}
-          onCompleteOnboarding={handleCompleteOnboarding}
         />
       </div>
     );

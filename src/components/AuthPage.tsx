@@ -36,7 +36,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({
   const [signupPassword, setSignupPassword] = useState('');
   const [signupCodmIgn, setSignupCodmIgn] = useState('');
   const [signupCodmUid, setSignupCodmUid] = useState('');
-  const [initialDeposit, setInitialDeposit] = useState<number>(1000);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
 
   // Sign In Form State
@@ -76,7 +75,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         password: signupPassword,
         codmIgn: signupCodmIgn.trim(),
         codmUid: signupCodmUid.trim(),
-        initialDeposit,
+        initialDeposit: 0,
       });
     } catch (err: any) {
       setError(err.message || 'Account registration failed');
@@ -291,41 +290,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                 </span>
               </div>
 
-              {/* Initial Wallet Funding Preset */}
-              <div className="space-y-2 pt-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <Wallet className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Initial Wallet Balance (₦ Naira)</span>
-                  </label>
-                  <span className="text-[11px] font-mono-nums text-amber-400 font-bold">
-                    Min ₦1,000 for bets
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-4 gap-2">
-                  {[1000, 2000, 5000, 10000].map((amt) => (
-                    <button
-                      key={amt}
-                      type="button"
-                      onClick={() => setInitialDeposit(amt)}
-                      className={`py-2 rounded-xl text-xs font-black font-mono-nums transition-all cursor-pointer border ${
-                        initialDeposit === amt
-                          ? 'bg-emerald-500 text-neutral-950 border-emerald-400 shadow-md scale-105'
-                          : 'bg-neutral-950 text-neutral-300 border-neutral-800 hover:border-neutral-700'
-                      }`}
-                    >
-                      ₦{amt.toLocaleString()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Trust & Escrow Guarantee Note */}
+              {/* Funding Notice: Funding happens inside dashboard */}
               <div className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800 text-[11px] text-neutral-300 flex items-start gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <span>
-                  100% Escrow Protection: Funds remain safely in your personal wallet until you join or create a match.
+                  Your account starts with ₦0 balance. You can fund your wallet via instant bank transfer anytime inside your player dashboard before creating or joining matches.
                 </span>
               </div>
 
@@ -340,7 +309,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                 ) : (
                   <>
                     <Swords className="w-4 h-4 stroke-[2.5]" />
-                    <span>Create Account (Fund ₦{initialDeposit.toLocaleString()})</span>
+                    <span>Create CODM Stake Account</span>
                   </>
                 )}
               </button>
