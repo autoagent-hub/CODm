@@ -4,6 +4,7 @@ import {
   Swords, ShieldCheck, Mail, Lock, Eye, EyeOff, Crosshair, Target,
   ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, Wallet, Sparkles, UserCheck
 } from 'lucide-react';
+import codmHeroAction from '../assets/images/codm_hero_action_1791303425231.jpg';
 
 interface AuthPageProps {
   initialMode?: 'signin' | 'signup';
@@ -123,7 +124,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
       {/* Background CODM Action Hero overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
         <img
-          src="/src/assets/images/codm_hero_action_1791303425231.jpg"
+          src={codmHeroAction}
           alt="CODM Action Background"
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"

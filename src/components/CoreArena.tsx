@@ -6,6 +6,8 @@ import {
   UserCheck, RefreshCw, Sparkles, Crosshair, Target, X, Plus,
   Flame, Zap, Users, Flag, Shield, Sliders, ChevronRight, Gamepad2, MapPin
 } from 'lucide-react';
+import codmTrophyPot from '../assets/images/codm_trophy_pot_1791303439079.jpg';
+import codmScoreVictory from '../assets/images/codm_score_victory_1791303464940.jpg';
 
 interface CoreArenaProps {
   currentUser: UserProfile;
@@ -358,7 +360,7 @@ export const CoreArena: React.FC<CoreArenaProps> = ({
                 </div>
 
                 <div className="p-4 rounded-xl bg-neutral-950 border border-amber-500/40 flex items-center gap-3">
-                  <img src={myActiveMatch.opponent?.avatar || '/src/assets/images/codm_trophy_pot_1791303439079.jpg'} alt="Opponent" className="w-12 h-12 rounded-xl object-cover" referrerPolicy="no-referrer" />
+                  <img src={myActiveMatch.opponent?.avatar || codmTrophyPot} alt="Opponent" className="w-12 h-12 rounded-xl object-cover" referrerPolicy="no-referrer" />
                   <div>
                     <div className="text-[10px] text-amber-400 font-mono font-bold">TEAM BRAVO (RIVAL)</div>
                     <div className="font-bold text-white">{myActiveMatch.opponent?.codmIgn || 'Rival Connected'}</div>
@@ -425,7 +427,7 @@ export const CoreArena: React.FC<CoreArenaProps> = ({
                         />
                         <button
                           type="button"
-                          onClick={() => setScreenshotPreview('/src/assets/images/codm_score_victory_1791303463892.jpg')}
+                          onClick={() => setScreenshotPreview(codmScoreVictory)}
                           className="px-3 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-neutral-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
                         >
                           Use Demo Victory Screenshot
