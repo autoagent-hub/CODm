@@ -6,9 +6,7 @@ import {
   HelpCircle, ChevronDown, ChevronUp, Lock, Banknote, Play, Film,
   UserCheck, AlertCircle, Scale, Clock, RefreshCw
 } from 'lucide-react';
-import codmHeroAction from '../assets/images/codm_hero_action_1791303425231.jpg';
-import codmSniperShipment from '../assets/images/codm_sniper_shipment_1791303451126.jpg';
-import codmTeamTactical from '../assets/images/codm_team_tactical_1791306219906.jpg';
+import { CODM_IMAGES } from '../assets/images';
 
 export interface LandingPageProps {
   matches: Match[];
@@ -134,10 +132,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <section className="relative overflow-hidden py-16 sm:py-24 border-b border-neutral-800/80">
         <div className="absolute inset-0 z-0">
           <img
-            src={codmHeroAction}
+            src={CODM_IMAGES.heroAction}
             alt="CODM Action Hero"
             className="w-full h-full object-cover object-center opacity-25"
             referrerPolicy="no-referrer"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = CODM_IMAGES.heroActionFallback;
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/95 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent" />
@@ -309,10 +310,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="p-8 rounded-3xl bg-neutral-900 border-2 border-amber-500/50 hover:border-amber-400 transition-all space-y-6 relative overflow-hidden group shadow-2xl">
             <div className="absolute inset-0 z-0">
               <img
-                src={codmSniperShipment}
+                src={CODM_IMAGES.shipment1v1}
                 alt="Solo 1v1"
                 className="w-full h-full object-cover opacity-20 group-hover:scale-105 transition-transform duration-500"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = CODM_IMAGES.shipment1v1Fallback;
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/90 to-transparent" />
             </div>
@@ -357,10 +361,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="p-8 rounded-3xl bg-neutral-900 border-2 border-emerald-500/50 hover:border-emerald-400 transition-all space-y-6 relative overflow-hidden group shadow-2xl">
             <div className="absolute inset-0 z-0">
               <img
-                src={codmTeamTactical}
+                src={CODM_IMAGES.squadTactical}
                 alt="Squad Team"
                 className="w-full h-full object-cover opacity-20 group-hover:scale-105 transition-transform duration-500"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = CODM_IMAGES.squadTacticalFallback;
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/90 to-transparent" />
             </div>

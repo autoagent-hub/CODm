@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserProfile } from '../types';
-import { Wallet, Swords, ArrowDownLeft, Plus, Home, Target, LogOut } from 'lucide-react';
+import { Wallet, Swords, ArrowDownLeft, Plus, Target, LogOut } from 'lucide-react';
 
 export type NavigationTab = 'landing' | 'auth' | 'arena' | 'wallet_dashboard' | 'funding' | 'active_bets';
 
@@ -22,7 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 w-full border-b border-neutral-800/80 bg-neutral-950/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Zone 1: Single text element brand wordmark + Back to Landing button */}
+        {/* Zone 1: Single text element brand wordmark */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setCurrentTab('arena')}
@@ -36,14 +36,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 CODM STAKE
               </span>
             </div>
-          </button>
-
-          <button
-            onClick={() => setCurrentTab('landing')}
-            className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-[11px] font-semibold text-neutral-400 hover:text-amber-400 transition-colors cursor-pointer"
-            title="Return to the public landing page"
-          >
-            <span>← Landing Page</span>
           </button>
         </div>
 
@@ -123,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onSignOut}
               className="p-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-rose-500/50 text-neutral-400 hover:text-rose-400 transition-colors cursor-pointer"
-              title="Sign Out to Landing Page"
+              title="Sign Out to Sign In / Landing Page"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -134,26 +126,20 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Nav strip */}
       <div className="md:hidden flex items-center justify-around border-t border-neutral-900 bg-neutral-950 px-2 py-2 text-xs">
         <button
-          onClick={() => setCurrentTab('landing')}
-          className={`py-1 px-2 rounded ${currentTab === 'landing' ? 'text-amber-400 font-bold' : 'text-neutral-400'}`}
-        >
-          Home
-        </button>
-        <button
           onClick={() => setCurrentTab('arena')}
-          className={`py-1 px-2 rounded ${currentTab === 'arena' ? 'text-amber-400 font-bold' : 'text-neutral-400'}`}
+          className={`py-1 px-3 rounded-lg ${currentTab === 'arena' ? 'bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30' : 'text-neutral-400'}`}
         >
-          Arena
+          Arena Dashboard
         </button>
         <button
           onClick={() => setCurrentTab('wallet_dashboard')}
-          className={`py-1 px-2 rounded ${currentTab === 'wallet_dashboard' ? 'text-amber-400 font-bold' : 'text-neutral-400'}`}
+          className={`py-1 px-3 rounded-lg ${currentTab === 'wallet_dashboard' ? 'bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30' : 'text-neutral-400'}`}
         >
           Wallet
         </button>
         <button
           onClick={() => setCurrentTab('funding')}
-          className={`py-1 px-2 rounded ${currentTab === 'funding' ? 'text-emerald-400 font-bold' : 'text-neutral-400'}`}
+          className={`py-1 px-3 rounded-lg ${currentTab === 'funding' ? 'bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30' : 'text-neutral-400'}`}
         >
           Fund ₦
         </button>

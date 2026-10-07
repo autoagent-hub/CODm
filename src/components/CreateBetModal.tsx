@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { UserProfile } from '../types';
 import {
   X, Swords, ShieldCheck, AlertCircle, Crosshair, Target, Zap,
-  Flame, Users, Flag, Sparkles, MapPin, Gamepad2
+  Flame, Users, Flag, MapPin, Gamepad2
 } from 'lucide-react';
+import { CODM_IMAGES } from '../assets/images';
 
 interface CreateBetModalProps {
   currentUser: UserProfile;
@@ -19,15 +20,6 @@ interface CreateBetModalProps {
   }) => Promise<void>;
   onOpenWallet: () => void;
 }
-
-const QUICK_SUGGESTIONS = [
-  { mode: '1v1 Sniper Only', map: 'Shipment' },
-  { mode: '1v1 Gunfight', map: 'Killhouse' },
-  { mode: 'Search & Destroy (S&D)', map: 'Standoff' },
-  { mode: 'Hardpoint', map: 'Summit' },
-  { mode: 'Domination', map: 'Firing Range' },
-  { mode: '1v1 Battle Royale (Isolated)', map: 'Isolated' },
-];
 
 export const CreateBetModal: React.FC<CreateBetModalProps> = ({
   currentUser,
@@ -141,7 +133,7 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
               1. Choose Betting Format
             </label>
             <div className="grid grid-cols-2 gap-3">
-              {/* Solo 1v1 */}
+              {/* Solo 1v1 Card with Shipment Background */}
               <button
                 type="button"
                 onClick={() => {
@@ -149,24 +141,42 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
                   setGameModeInput('1v1 Sniper Only');
                   setMapInput('Shipment');
                 }}
-                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-3 ${
+                className={`relative overflow-hidden p-3.5 rounded-2xl border text-left transition-all cursor-pointer group flex flex-col justify-between h-24 ${
                   betType === 'solo'
-                    ? 'bg-amber-500/15 border-amber-400 text-white shadow-md'
-                    : 'bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-700'
+                    ? 'bg-neutral-900 border-amber-400 text-white shadow-lg ring-1 ring-amber-400'
+                    : 'bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-700 opacity-75 hover:opacity-100'
                 }`}
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                  betType === 'solo' ? 'bg-amber-400 text-neutral-950 font-black' : 'bg-neutral-900 text-neutral-400'
-                }`}>
-                  <Crosshair className="w-4 h-4" />
+                <img
+                  src={CODM_IMAGES.shipment1v1}
+                  alt="Shipment"
+                  className="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:scale-105 transition-transform"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = CODM_IMAGES.shipment1v1Fallback;
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/70 to-transparent" />
+
+                <div className="relative z-10 flex items-center justify-between">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                    betType === 'solo' ? 'bg-amber-400 text-neutral-950 font-black' : 'bg-neutral-900 text-neutral-400'
+                  }`}>
+                    <Crosshair className="w-3.5 h-3.5" />
+                  </div>
+                  {betType === 'solo' && (
+                    <span className="w-4 h-4 rounded-full bg-amber-400 text-neutral-950 flex items-center justify-center font-bold text-[9px]">
+                      ✓
+                    </span>
+                  )}
                 </div>
-                <div>
+
+                <div className="relative z-10">
                   <div className="font-heading font-black text-xs text-white uppercase">Solo (1v1)</div>
-                  <div className="text-[10px] text-neutral-400">Head-to-head duel</div>
+                  <div className="text-[10px] text-neutral-400">Shipment 1v1 Duel</div>
                 </div>
               </button>
 
-              {/* Squad Team */}
+              {/* Squad Team Card with Squad Background */}
               <button
                 type="button"
                 onClick={() => {
@@ -174,45 +184,40 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
                   setGameModeInput('Search & Destroy (S&D)');
                   setMapInput('Standoff');
                 }}
-                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-3 ${
+                className={`relative overflow-hidden p-3.5 rounded-2xl border text-left transition-all cursor-pointer group flex flex-col justify-between h-24 ${
                   betType === 'squad'
-                    ? 'bg-emerald-500/15 border-emerald-400 text-white shadow-md'
-                    : 'bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-700'
+                    ? 'bg-neutral-900 border-emerald-400 text-white shadow-lg ring-1 ring-emerald-400'
+                    : 'bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-700 opacity-75 hover:opacity-100'
                 }`}
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                  betType === 'squad' ? 'bg-emerald-400 text-neutral-950 font-black' : 'bg-neutral-900 text-neutral-400'
-                }`}>
-                  <Users className="w-4 h-4" />
+                <img
+                  src={CODM_IMAGES.squadTactical}
+                  alt="Squad"
+                  className="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:scale-105 transition-transform"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = CODM_IMAGES.squadTacticalFallback;
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/70 to-transparent" />
+
+                <div className="relative z-10 flex items-center justify-between">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                    betType === 'squad' ? 'bg-emerald-400 text-neutral-950 font-black' : 'bg-neutral-900 text-neutral-400'
+                  }`}>
+                    <Users className="w-3.5 h-3.5" />
+                  </div>
+                  {betType === 'squad' && (
+                    <span className="w-4 h-4 rounded-full bg-emerald-400 text-neutral-950 flex items-center justify-center font-bold text-[9px]">
+                      ✓
+                    </span>
+                  )}
                 </div>
-                <div>
+
+                <div className="relative z-10">
                   <div className="font-heading font-black text-xs text-white uppercase">Squad (Team)</div>
-                  <div className="text-[10px] text-neutral-400">Team tactical match</div>
+                  <div className="text-[10px] text-neutral-400">Team Tactical Match</div>
                 </div>
               </button>
-            </div>
-          </div>
-
-          {/* Quick Suggestions */}
-          <div>
-            <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider block mb-2">
-              Quick Presets (Or type your own below)
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {QUICK_SUGGESTIONS.map((s, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => {
-                    setGameModeInput(s.mode);
-                    setMapInput(s.map);
-                  }}
-                  className="px-2.5 py-1.5 rounded-lg bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 text-xs transition-colors cursor-pointer flex items-center gap-1"
-                >
-                  <Sparkles className="w-3 h-3 text-amber-400" />
-                  <span>{s.mode} ({s.map})</span>
-                </button>
-              ))}
             </div>
           </div>
 

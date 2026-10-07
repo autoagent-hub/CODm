@@ -2,6 +2,7 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 
@@ -806,9 +807,17 @@ app.post('/api/matches/:id/admin-resolve', (req, res) => {
 });
 
 async function startServer() {
-  // If in production or preview, serve dist if exists, otherwise vite middlewares
-  if (process.env.NODE_ENV === 'production') {
-    const distPath = path.resolve(__dirname, 'dist');
+  // Always serve static public assets (images, icons, etc.)
+  const publicPath = path.resolve(__dirname, 'public');
+  if (fs.existsSync(publicPath)) {
+    app.use(express.static(publicPath));
+  }
+
+  // Check if production build exists (e.g. on Render after npm run build)
+  const distPath = path.resolve(__dirname, 'dist');
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER || fs.existsSync(distPath);
+
+  if (isProduction && fs.existsSync(distPath)) {
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));

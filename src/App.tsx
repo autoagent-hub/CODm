@@ -246,6 +246,7 @@ export default function App() {
             onCancelMatch={handleCancelMatch}
             onOpenWallet={() => setCurrentTab('wallet_dashboard')}
             onRefresh={loadData}
+            onOpenCreateBet={handleOpenCreateBet}
             onOpenNewUserOnboarding={(targetMatch) => {
               setOnboardingTargetMatch(targetMatch || null);
               setIsOnboardingModalOpen(true);
@@ -282,12 +283,7 @@ export default function App() {
             <span>Call of Duty: Mobile Esports Escrow Wagering in Nigerian Naira (₦)</span>
           </div>
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => setCurrentTab('landing')}
-              className="text-amber-400 hover:underline cursor-pointer"
-            >
-              View Landing Page
-            </button>
+            <span className="text-neutral-400">Escrow Protected</span>
             <span>·</span>
             <span>Min Wager: ₦1,000</span>
             <span>·</span>
