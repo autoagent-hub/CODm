@@ -32,7 +32,7 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
   onOpenWallet,
 }) => {
   const [betType, setBetType] = useState<'solo' | 'squad'>('solo');
-  const [stakeAmount, setStakeAmount] = useState<number>(1000);
+  const [stakeInput, setStakeInput] = useState<string>('1000');
   const [gameModeInput, setGameModeInput] = useState<string>('1v1 Sniper Only');
   const [mapInput, setMapInput] = useState<string>('Shipment');
   const [rulesInput, setRulesInput] = useState<string>('Standard 1v1 rules. No scorestreaks/operators. Screenshot proof required.');
@@ -43,7 +43,9 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
   React.useEffect(() => {
     if (isOpen) {
       if (initialStake && initialStake >= 1000) {
-        setStakeAmount(initialStake);
+        setStakeInput(initialStake.toString());
+      } else if (!stakeInput) {
+        setStakeInput('1000');
       }
       if (initialMode) {
         setGameModeInput(initialMode);
@@ -53,11 +55,13 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
 
   if (!isOpen) return null;
 
-  const { potAmount, rakePercentFormatted, platformFee, winnerPayout } = calculateMatchEconomics(stakeAmount);
+  const parsedStake = parseInt(stakeInput, 10);
+  const stakeAmount = isNaN(parsedStake) ? 0 : parsedStake;
+  const { potAmount, rakePercentFormatted, platformFee, winnerPayout } = calculateMatchEconomics(Math.max(0, stakeAmount));
   const isInsufficient = currentUser.balance < stakeAmount;
 
   const handleCreate = async () => {
-    if (stakeAmount < 1000) {
+    if (!stakeInput.trim() || isNaN(parsedStake) || parsedStake < 1000) {
       setError('Minimum stake amount is ₦1,000');
       return;
     }
@@ -78,7 +82,7 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
     setError(null);
     try {
       await onSubmit({
-        stakeAmount,
+        stakeAmount: parsedStake,
         gameMode: gameModeInput.trim(),
         map: mapInput.trim(),
         rules: [
@@ -281,9 +285,12 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
                 <button
                   key={amt}
                   type="button"
-                  onClick={() => setStakeAmount(amt)}
+                  onClick={() => {
+                    setStakeInput(amt.toString());
+                    setError(null);
+                  }}
                   className={`py-2 rounded-xl text-xs font-black font-mono-nums transition-all cursor-pointer border ${
-                    stakeAmount === amt
+                    parsedStake === amt
                       ? 'bg-amber-400 text-neutral-950 border-amber-400 shadow-md scale-105'
                       : 'bg-neutral-950 text-neutral-300 border-neutral-800 hover:border-neutral-700'
                   }`}
@@ -293,18 +300,54 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
               ))}
             </div>
 
-            <div className="relative">
-              <span className="absolute left-3.5 top-2.5 text-xs text-neutral-400 font-mono-nums">₦</span>
-              <input
-                type="number"
-                min={1000}
-                step={500}
-                value={stakeAmount}
-                onChange={(e) => setStakeAmount(Math.max(1000, parseInt(e.target.value) || 1000))}
-                className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-neutral-950 border border-neutral-700 text-white font-mono-nums text-sm focus:outline-none focus:border-amber-400"
-              />
+            <div className="space-y-2">
+              <div className="relative">
+                <span className="absolute left-3.5 top-2.5 text-xs text-amber-400 font-black font-mono-nums">₦</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={stakeInput}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setStakeInput(val);
+                    setError(null);
+                  }}
+                  placeholder="Enter custom stake (e.g. 1500, 3000, 7500)"
+                  className="w-full pl-8 pr-24 py-2.5 rounded-xl bg-neutral-950 border border-neutral-700 text-white font-mono-nums font-bold text-sm focus:outline-none focus:border-amber-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStakeInput(currentUser.balance.toString());
+                    setError(null);
+                  }}
+                  className="absolute right-2 top-1.5 px-2.5 py-1 text-[10px] font-bold uppercase rounded-lg bg-neutral-800 text-amber-400 hover:bg-neutral-700 transition-colors cursor-pointer"
+                >
+                  Max
+                </button>
+              </div>
+
+              {/* Quick Increments */}
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-[10px] text-neutral-400 font-mono">ADD:</span>
+                {[500, 1000, 2000, 5000].map((inc) => (
+                  <button
+                    key={inc}
+                    type="button"
+                    onClick={() => {
+                      const current = isNaN(parsedStake) ? 0 : parsedStake;
+                      setStakeInput((current + inc).toString());
+                      setError(null);
+                    }}
+                    className="px-2 py-1 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-neutral-300 font-mono text-[11px] font-bold cursor-pointer"
+                  >
+                    +₦{inc.toLocaleString()}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="text-[11px] text-neutral-400 mt-1">Minimum stake is ₦1,000 · Tiered Rake (10% down to 5%)</div>
+            <div className="text-[11px] text-neutral-400 mt-1.5">Type any custom amount · Minimum stake is ₦1,000 · Tiered Rake (10% down to 5%)</div>
           </div>
 
           {/* Escrow Math Preview with Tiered Rake */}

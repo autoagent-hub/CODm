@@ -118,25 +118,21 @@ export default function App() {
     codmUid?: string;
     email: string;
     phone: string;
-    initialDeposit: number;
+    initialDeposit?: number;
   }) => {
-    // 1. Create new user profile with funded wallet
-    const newUser = await createUser(userData);
+    // 1. Create new user profile with ₦0 initial deposit
+    const newUser = await createUser({
+      ...userData,
+      initialDeposit: userData.initialDeposit || 0,
+    });
 
     // 2. Set as active user
     setAllUsers((prev) => ({ ...prev, [newUser.id]: newUser }));
     setCurrentUser(newUser);
 
-    // 3. If there is a target match, immediately lock ₦1,000 into escrow!
-    if (onboardingTargetMatch) {
-      await joinMatch(onboardingTargetMatch.id, newUser.id);
-      const refreshedUser = await fetchUser(newUser.id);
-      setCurrentUser(refreshedUser);
-      setAllUsers((prev) => ({ ...prev, [newUser.id]: refreshedUser }));
-      await loadData();
-      setOnboardingTargetMatch(null);
-      setCurrentTab('arena');
-    }
+    await loadData();
+    setOnboardingTargetMatch(null);
+    setCurrentTab('arena');
   };
 
   const handleSubmitResult = async (matchId: string, claim: 'VICTORY' | 'DEFEAT' | 'DRAW', screenshotBase64?: string) => {

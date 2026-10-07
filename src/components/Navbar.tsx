@@ -29,17 +29,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setCurrentTab('arena')}
             className="flex items-center gap-2.5 group text-left focus:outline-none cursor-pointer"
           >
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-amber-500/10 border border-amber-500/40 group-hover:border-amber-400 transition-all p-0.5 shadow-md shadow-amber-500/10">
-              <img
-                src={CODM_IMAGES.appLogo}
-                alt="CODM Stake"
-                className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = CODM_IMAGES.appLogoFallback;
-                }}
-              />
-            </div>
+            <img
+              src={CODM_IMAGES.appLogo}
+              alt="CODM Stake"
+              className="w-10 h-10 object-contain group-hover:scale-105 transition-transform drop-shadow-md"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = CODM_IMAGES.appLogoFallback;
+              }}
+            />
             <div>
               <span className="font-heading font-black text-lg sm:text-xl tracking-wider text-white group-hover:text-amber-400 transition-colors">
                 CODM STAKE

@@ -76,17 +76,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           {/* Brand Wordmark with Official Emblem */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-amber-500/10 border border-amber-500/40 p-0.5 shadow-md shadow-amber-500/10">
-              <img
-                src={CODM_IMAGES.appLogo}
-                alt="CODM Stake"
-                className="w-full h-full object-cover rounded-lg"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = CODM_IMAGES.appLogoFallback;
-                }}
-              />
-            </div>
+            <img
+              src={CODM_IMAGES.appLogo}
+              alt="CODM Stake"
+              className="w-11 h-11 object-contain drop-shadow-md"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = CODM_IMAGES.appLogoFallback;
+              }}
+            />
             <div>
               <span className="font-heading font-black text-xl tracking-wide text-white">
                 CODM STAKE
@@ -593,7 +591,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
               <h4 className="text-base font-bold text-white">Opponent Accepts & Locks</h4>
               <p className="text-xs text-neutral-400 leading-relaxed">
-                Send the invite link to your opponent. If they are new, they sign up, fund ₦1,000, and it is instantly held in escrow to match your stake.
+                Send the invite link to your opponent. If they are new, they quickly sign up with their CODM gamer tag to enter the match room.
               </p>
             </div>
 

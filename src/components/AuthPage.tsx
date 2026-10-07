@@ -146,17 +146,15 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl overflow-hidden bg-amber-500/10 border border-amber-500/40 p-0.5 shadow-md shadow-amber-500/10">
-            <img
-              src={CODM_IMAGES.appLogo}
-              alt="CODM Stake"
-              className="w-full h-full object-cover rounded-lg"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = CODM_IMAGES.appLogoFallback;
-              }}
-            />
-          </div>
+          <img
+            src={CODM_IMAGES.appLogo}
+            alt="CODM Stake"
+            className="w-10 h-10 object-contain drop-shadow-md"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = CODM_IMAGES.appLogoFallback;
+            }}
+          />
           <div>
             <span className="font-heading font-black text-lg tracking-wide text-white">
               CODM STAKE
@@ -299,14 +297,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                 />
                 <span className="text-[10px] text-neutral-400 block">
                   Copy from your CODM in-game Profile tab (Numeric Player ID)
-                </span>
-              </div>
-
-              {/* Funding Notice: Funding happens inside dashboard */}
-              <div className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800 text-[11px] text-neutral-300 flex items-start gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <span>
-                  Your account starts with ₦0 balance. You can fund your wallet via instant bank transfer anytime inside your player dashboard before creating or joining matches.
                 </span>
               </div>
 

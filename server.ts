@@ -881,6 +881,7 @@ async function startServer() {
   const publicPath = path.resolve(__dirname, 'public');
   if (fs.existsSync(publicPath)) {
     app.use(express.static(publicPath));
+    app.use('/public', express.static(publicPath));
   }
 
   // Check if production build exists (e.g. on Render after npm run build)
