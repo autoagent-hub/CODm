@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User Profiles
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) && isValidId(userId);
+      allow update: if isOwner(userId) && isValidId(userId);
+      allow delete: if false;
+
+      // User Transaction History
+      match /transactions/{transactionId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(transactionId);
+        allow update, delete: if false;
+      }
+    }
+
+    // Wager Matches Collection
+    match /matches/{matchId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(matchId) && request.resource.data.creatorId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(matchId) && (
+        resource.data.creatorId == request.auth.uid ||
+        resource.data.opponentId == request.auth.uid ||
+        (resource.data.status == 'PENDING_OPPONENT' && request.resource.data.opponentId == request.auth.uid)
+      );
+      allow delete: if false;
+    }
+  }
+}

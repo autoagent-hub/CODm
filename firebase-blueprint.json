@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "user": {
+      "title": "User Profile",
+      "description": "User profile with CODM gamer tag, wallet balances, and match combat statistics",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique user ID" },
+        "username": { "type": "string", "description": "Display username" },
+        "codmIgn": { "type": "string", "description": "Call of Duty Mobile In-Game Name", "maxLength": 64 },
+        "codmUid": { "type": "string", "description": "CODM Player UID", "maxLength": 32 },
+        "email": { "type": "string", "description": "Email address", "format": "email" },
+        "phone": { "type": "string", "description": "Phone number" },
+        "balance": { "type": "number", "description": "Available Naira wallet balance" },
+        "escrowBalance": { "type": "number", "description": "Currently locked escrow balance" },
+        "totalWinnings": { "type": "number", "description": "Lifetime Naira winnings" },
+        "wins": { "type": "number", "description": "Total victory count" },
+        "losses": { "type": "number", "description": "Total defeat count" },
+        "draws": { "type": "number", "description": "Total draw tie count" },
+        "avatar": { "type": "string", "description": "Avatar image URL" },
+        "tier": { "type": "string", "description": "Rank tier title" },
+        "clan": { "type": "string", "description": "Clan tag" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["id", "codmIgn", "email", "balance"]
+    },
+    "match": {
+      "title": "Match",
+      "description": "Wager match room with stakes, map, mode, status, and outcome claims",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique match ID" },
+        "roomCode": { "type": "string", "description": "CODM private lobby room code" },
+        "gameMode": { "type": "string", "description": "Game mode name" },
+        "map": { "type": "string", "description": "Map name" },
+        "stakeAmount": { "type": "number", "description": "Individual player stake in Naira" },
+        "potAmount": { "type": "number", "description": "Total pot prize in Naira" },
+        "platformFee": { "type": "number", "description": "Tiered platform rake deduction" },
+        "winnerPayout": { "type": "number", "description": "Winner net payout in Naira" },
+        "status": {
+          "type": "string",
+          "enum": ["PENDING_OPPONENT", "READY_TO_PLAY", "IN_PROGRESS", "SUBMITTING_RESULTS", "DISPUTED", "SETTLED", "CANCELLED"]
+        },
+        "creatorId": { "type": "string", "description": "Creator user ID" },
+        "opponentId": { "type": "string", "description": "Opponent user ID" },
+        "winnerId": { "type": "string", "description": "Winner user ID or DRAW" },
+        "createdAt": { "type": "number", "description": "Creation unix epoch" }
+      },
+      "required": ["id", "roomCode", "gameMode", "map", "stakeAmount", "potAmount", "status", "creatorId"]
+    },
+    "transaction": {
+      "title": "Transaction",
+      "description": "Financial ledger entry for deposits, withdrawals, escrow locks and payouts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique transaction ID" },
+        "userId": { "type": "string", "description": "Owner user ID" },
+        "type": { "type": "string", "enum": ["DEPOSIT", "WITHDRAWAL", "ESCROW_LOCK", "ESCROW_REFUND", "MATCH_WIN_PAYOUT", "PENALTY_FORFEIT"] },
+        "amount": { "type": "number", "description": "Amount in Naira" },
+        "description": { "type": "string", "description": "Transaction description", "maxLength": 256 },
+        "timestamp": { "type": "number", "description": "Unix timestamp" }
+      },
+      "required": ["id", "userId", "type", "amount", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "User profile documents keyed by user ID"
+    },
+    "/matches/{matchId}": {
+      "schema": "match",
+      "description": "Wager matches collection"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "transaction",
+      "description": "User transaction ledger history"
+    }
+  }
+}

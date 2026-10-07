@@ -5,6 +5,9 @@ import {
   cancelMatch, submitMatchResult, depositWallet, withdrawWallet,
   createUser, signUpUser, signInUser, DEFAULT_USERS
 } from './services/api';
+import { auth, firebaseSignOut } from './firebase/config';
+import { onAuthStateChanged } from 'firebase/auth';
+import { syncUserToFirestore, getUserFromFirestore, syncMatchToFirestore } from './firebase/service';
 import { Navbar, NavigationTab } from './components/Navbar';
 import { BottomNavbar } from './components/BottomNavbar';
 import { LandingPage } from './components/LandingPage';
@@ -41,6 +44,23 @@ export default function App() {
     if (joinMatchId) {
       handleDeepLinkJoin(joinMatchId);
     }
+
+    // Listen to Firebase Auth state
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        try {
+          const profile = await getUserFromFirestore(fbUser.uid);
+          if (profile) {
+            setCurrentUser(profile);
+            setAllUsers((prev) => ({ ...prev, [profile.id]: profile }));
+          }
+        } catch (e) {
+          console.error('Failed to load profile from Firestore:', e);
+        }
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const loadData = async () => {
@@ -193,10 +213,36 @@ export default function App() {
     setCurrentTab('arena');
   };
 
+  const handleGoogleSuccess = async (user: UserProfile) => {
+    setCurrentUser(user);
+    setAllUsers((prev) => ({ ...prev, [user.id]: user }));
+    try {
+      await syncUserToFirestore(user);
+    } catch (e) {
+      console.error('Failed to sync Google user to Firestore:', e);
+    }
+    await loadData();
+    setCurrentTab('arena');
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await firebaseSignOut();
+    } catch (e) {
+      console.error('Failed to sign out from Firebase:', e);
+    }
+    setCurrentTab('landing');
+  };
+
   const handleUpdateUser = async (updatedData: Partial<UserProfile>) => {
     const updated = { ...currentUser, ...updatedData };
     setCurrentUser(updated);
     setAllUsers((prev) => ({ ...prev, [currentUser.id]: updated }));
+    try {
+      await syncUserToFirestore(updated);
+    } catch (e) {
+      console.error('Failed to sync updated user to Firestore:', e);
+    }
   };
 
   // 1. STANDALONE SEPARATED LANDING PAGE VIEW
@@ -223,6 +269,7 @@ export default function App() {
         onSignIn={handleSignIn}
         onBackToLanding={() => setCurrentTab('landing')}
         demoUsers={allUsers}
+        onGoogleSuccess={handleGoogleSuccess}
       />
     );
   }
@@ -268,7 +315,7 @@ export default function App() {
             onNavigateToHistory={() => setCurrentTab('history')}
             onNavigateToFunding={() => setCurrentTab('funding')}
             onOpenCreateBet={handleOpenCreateBet}
-            onSignOut={() => setCurrentTab('landing')}
+            onSignOut={handleSignOut}
           />
         )}
 
