@@ -6,11 +6,14 @@ import {
   createUser, signUpUser, signInUser, DEFAULT_USERS
 } from './services/api';
 import { Navbar, NavigationTab } from './components/Navbar';
+import { BottomNavbar } from './components/BottomNavbar';
 import { LandingPage } from './components/LandingPage';
 import { AuthPage } from './components/AuthPage';
 import { CoreArena } from './components/CoreArena';
 import { WalletDashboard } from './components/WalletDashboard';
 import { FundingPage } from './components/FundingPage';
+import { ProfilePage } from './components/ProfilePage';
+import { HistoryPage } from './components/HistoryPage';
 import { CreateBetModal } from './components/CreateBetModal';
 import { OpponentOnboardingModal } from './components/OpponentOnboardingModal';
 
@@ -136,7 +139,7 @@ export default function App() {
     }
   };
 
-  const handleSubmitResult = async (matchId: string, claim: 'VICTORY' | 'DEFEAT', screenshotBase64?: string) => {
+  const handleSubmitResult = async (matchId: string, claim: 'VICTORY' | 'DEFEAT' | 'DRAW', screenshotBase64?: string) => {
     await submitMatchResult(matchId, {
       playerId: currentUser.id,
       claim,
@@ -194,6 +197,12 @@ export default function App() {
     setCurrentTab('arena');
   };
 
+  const handleUpdateUser = async (updatedData: Partial<UserProfile>) => {
+    const updated = { ...currentUser, ...updatedData };
+    setCurrentUser(updated);
+    setAllUsers((prev) => ({ ...prev, [currentUser.id]: updated }));
+  };
+
   // 1. STANDALONE SEPARATED LANDING PAGE VIEW
   if (currentTab === 'landing') {
     return (
@@ -222,20 +231,11 @@ export default function App() {
     );
   }
 
-  // 3. DASHBOARD / IN-APP VIEW (ARENA, WALLET DASHBOARD, FUNDING PAGE)
+  // 3. DASHBOARD / IN-APP VIEW (ARENA, HISTORY, PROFILE, WALLET, FUNDING)
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col bg-tactical-grid selection:bg-amber-500 selection:text-black">
-      {/* Top 3-Zone Navigation Bar */}
-      <Navbar
-        currentUser={currentUser}
-        currentTab={currentTab}
-        setCurrentTab={(tab) => setCurrentTab(tab)}
-        openCreateBetModal={() => handleOpenCreateBet()}
-        onSignOut={() => setCurrentTab('landing')}
-      />
-
-      {/* Main App Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col bg-tactical-grid selection:bg-amber-500 selection:text-black relative">
+      {/* Main App Container with bottom padding for bottom dock navigation */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-28">
         {currentTab === 'arena' && (
           <CoreArena
             currentUser={currentUser}
@@ -254,25 +254,46 @@ export default function App() {
           />
         )}
 
-        {currentTab === 'wallet_dashboard' && (
+        {currentTab === 'history' && (
+          <HistoryPage
+            currentUser={currentUser}
+            matches={matches}
+            onNavigateToArena={() => setCurrentTab('arena')}
+            onOpenCreateBet={handleOpenCreateBet}
+          />
+        )}
+
+        {currentTab === 'profile' && (
+          <ProfilePage
+            currentUser={currentUser}
+            matches={matches}
+            onUpdateUser={handleUpdateUser}
+            onNavigateToWallet={() => setCurrentTab('wallet_dashboard')}
+            onNavigateToHistory={() => setCurrentTab('history')}
+            onNavigateToFunding={() => setCurrentTab('funding')}
+            onOpenCreateBet={handleOpenCreateBet}
+            onSignOut={() => setCurrentTab('landing')}
+          />
+        )}
+
+        {(currentTab === 'wallet_dashboard' || currentTab === 'funding') && (
           <WalletDashboard
             currentUser={currentUser}
             onNavigateToFunding={() => setCurrentTab('funding')}
+            onDeposit={handleDeposit}
             onOpenCreateBet={() => handleOpenCreateBet()}
             onWithdraw={handleWithdraw}
             onRefresh={loadData}
           />
         )}
-
-        {currentTab === 'funding' && (
-          <FundingPage
-            currentUser={currentUser}
-            onDeposit={handleDeposit}
-            onNavigateToArena={() => setCurrentTab('arena')}
-            onOpenCreateBet={() => handleOpenCreateBet()}
-          />
-        )}
       </main>
+
+      {/* Fixed Bottom Navigation Dock (Icons Only in requested order: Dashboard, Wallet & Fund, History, Profile) */}
+      <BottomNavbar
+        currentUser={currentUser}
+        currentTab={currentTab}
+        setCurrentTab={(tab) => setCurrentTab(tab)}
+      />
 
       {/* App Footer */}
       <footer className="border-t border-neutral-900 bg-neutral-950 py-6 mt-auto">

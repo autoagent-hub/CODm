@@ -146,8 +146,16 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <span className="font-heading font-black text-lg tracking-wider">1v1</span>
+          <div className="w-9 h-9 rounded-xl overflow-hidden bg-amber-500/10 border border-amber-500/40 p-0.5 shadow-md shadow-amber-500/10">
+            <img
+              src={CODM_IMAGES.appLogo}
+              alt="CODM Stake"
+              className="w-full h-full object-cover rounded-lg"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = CODM_IMAGES.appLogoFallback;
+              }}
+            />
           </div>
           <div>
             <span className="font-heading font-black text-lg tracking-wide text-white">

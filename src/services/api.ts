@@ -4,8 +4,10 @@ export const DEFAULT_USERS: Record<string, UserProfile> = {
   user_ghost: {
     id: 'user_ghost',
     username: 'Ghost_NG',
-    codmIgn: 'Ghost_NG',
+    codmIgn: 'GHOST_NG',
     codmUid: '6829471928371902',
+    tier: 'LEGENDARY TIER',
+    clan: '[1V1_PRO]',
     email: 'ghost@lagos-codm.com',
     phone: '+234 803 123 4567',
     balance: 10000,
@@ -13,6 +15,7 @@ export const DEFAULT_USERS: Record<string, UserProfile> = {
     totalWinnings: 24500,
     wins: 14,
     losses: 3,
+    draws: 1,
     avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
     transactions: [
       {
@@ -29,6 +32,8 @@ export const DEFAULT_USERS: Record<string, UserProfile> = {
     username: 'ShadowSniper',
     codmIgn: 'ShadowSniper',
     codmUid: '6948201948271034',
+    tier: 'MASTER V TIER',
+    clan: '[NIGHT_HAWK]',
     email: 'shadow@esports.ng',
     phone: '+234 812 987 6543',
     balance: 5000,
@@ -36,6 +41,7 @@ export const DEFAULT_USERS: Record<string, UserProfile> = {
     totalWinnings: 12000,
     wins: 8,
     losses: 5,
+    draws: 0,
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
     transactions: [
       {
@@ -99,6 +105,7 @@ export async function signUpUser(data: {
     totalWinnings: 0,
     wins: 0,
     losses: 0,
+    draws: 0,
     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(data.codmIgn.trim())}`,
     transactions: numDeposit > 0 ? [
       {
@@ -170,6 +177,7 @@ export async function createUser(data: Partial<UserProfile> & { initialDeposit?:
     totalWinnings: 0,
     wins: 0,
     losses: 0,
+    draws: 0,
     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${data.codmIgn}`,
     transactions: data.initialDeposit ? [
       {
@@ -286,7 +294,7 @@ export async function cancelMatch(matchId: string): Promise<Match> {
 
 export async function submitMatchResult(matchId: string, payload: {
   playerId: string;
-  claim: 'VICTORY' | 'DEFEAT';
+  claim: 'VICTORY' | 'DEFEAT' | 'DRAW';
   screenshotBase64?: string;
 }): Promise<Match> {
   const res = await fetch(`/api/matches/${matchId}/submit-result`, {

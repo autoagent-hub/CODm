@@ -5,6 +5,7 @@ import {
   Flame, Users, Flag, MapPin, Gamepad2
 } from 'lucide-react';
 import { CODM_IMAGES } from '../assets/images';
+import { calculateMatchEconomics } from '../utils/pricing';
 
 interface CreateBetModalProps {
   currentUser: UserProfile;
@@ -52,9 +53,7 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
 
   if (!isOpen) return null;
 
-  const potAmount = stakeAmount * 2;
-  const platformFee = Math.round(potAmount * 0.10);
-  const winnerPayout = potAmount - platformFee;
+  const { potAmount, rakePercentFormatted, platformFee, winnerPayout } = calculateMatchEconomics(stakeAmount);
   const isInsufficient = currentUser.balance < stakeAmount;
 
   const handleCreate = async () => {
@@ -278,7 +277,7 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
             </div>
 
             <div className="grid grid-cols-4 gap-2 mb-2">
-              {[1000, 2000, 5000, 10000].map((amt) => (
+              {[1000, 2500, 5000, 10000].map((amt) => (
                 <button
                   key={amt}
                   type="button"
@@ -305,21 +304,21 @@ export const CreateBetModal: React.FC<CreateBetModalProps> = ({
                 className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-neutral-950 border border-neutral-700 text-white font-mono-nums text-sm focus:outline-none focus:border-amber-400"
               />
             </div>
-            <div className="text-[11px] text-neutral-400 mt-1">Minimum stake is ₦1,000</div>
+            <div className="text-[11px] text-neutral-400 mt-1">Minimum stake is ₦1,000 · Tiered Rake (10% down to 5%)</div>
           </div>
 
-          {/* Escrow Math Preview */}
+          {/* Escrow Math Preview with Tiered Rake */}
           <div className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800 text-xs space-y-1.5 font-mono-nums">
             <div className="flex items-center justify-between text-neutral-400">
               <span>Total Escrow Pot (2x Stake):</span>
               <span className="text-amber-400 font-bold text-sm">₦{potAmount.toLocaleString()}</span>
             </div>
             <div className="flex items-center justify-between text-neutral-400">
-              <span>Platform Rake (10%):</span>
+              <span>Tiered Platform Rake ({rakePercentFormatted}):</span>
               <span className="text-rose-400">-₦{platformFee.toLocaleString()}</span>
             </div>
             <div className="flex items-center justify-between text-emerald-400 font-bold pt-1 border-t border-neutral-800">
-              <span>Winner Payout (90%):</span>
+              <span>Winner Payout:</span>
               <span className="text-sm">₦{winnerPayout.toLocaleString()}</span>
             </div>
           </div>

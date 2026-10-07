@@ -7,6 +7,7 @@ import {
   UserCheck, AlertCircle, Scale, Clock, RefreshCw
 } from 'lucide-react';
 import { CODM_IMAGES } from '../assets/images';
+import { calculateMatchEconomics, TIERED_COMMISSION_SCHEDULE } from '../utils/pricing';
 
 export interface LandingPageProps {
   matches: Match[];
@@ -65,20 +66,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  // Calculator numbers
-  const calcPot = calcStake * 2;
-  const calcFee = Math.round(calcPot * 0.10);
-  const calcPayout = calcPot - calcFee;
+  // Calculator numbers using Tiered Commission Model
+  const { potAmount: calcPot, rakePercentFormatted: calcRakeFormatted, platformFee: calcFee, winnerPayout: calcPayout } = calculateMatchEconomics(calcStake);
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col bg-tactical-grid selection:bg-amber-500 selection:text-black">
       {/* 1. DEDICATED PUBLIC LANDING HEADER (NO OVERLAPPING APP DASHBOARD NAVBAR) */}
       <header className="sticky top-0 z-40 w-full border-b border-neutral-800/80 bg-neutral-950/95 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-          {/* Brand Wordmark */}
+          {/* Brand Wordmark with Official Emblem */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <span className="font-heading font-black text-xl tracking-wider">1v1</span>
+            <div className="w-10 h-10 rounded-xl overflow-hidden bg-amber-500/10 border border-amber-500/40 p-0.5 shadow-md shadow-amber-500/10">
+              <img
+                src={CODM_IMAGES.appLogo}
+                alt="CODM Stake"
+                className="w-full h-full object-cover rounded-lg"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = CODM_IMAGES.appLogoFallback;
+                }}
+              />
             </div>
             <div>
               <span className="font-heading font-black text-xl tracking-wide text-white">
@@ -254,7 +261,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
 
               <div className="p-4 rounded-2xl bg-neutral-950/80 border border-neutral-800">
-                <div className="text-[11px] text-neutral-400">Platform Rake (10%)</div>
+                <div className="text-[11px] text-neutral-400">Tiered Rake ({calcRakeFormatted})</div>
                 <div className="text-xl sm:text-2xl font-black text-rose-400 font-mono-nums mt-1">
                   -₦{calcFee.toLocaleString()}
                 </div>
@@ -267,6 +274,62 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   ₦{calcPayout.toLocaleString()}
                 </div>
                 <div className="text-[10px] text-emerald-400/80">Credited to wallet</div>
+              </div>
+            </div>
+
+            {/* Transparent Tiered Commission Model Schedule Table */}
+            <div className="pt-6 border-t border-neutral-800/80 space-y-3">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-neutral-300 font-bold uppercase">Tiered Commission Schedule</span>
+                <span className="text-amber-400 font-bold">10% Down to 5% Rake</span>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-950">
+                <table className="w-full text-left text-xs font-mono-nums">
+                  <thead className="bg-neutral-900/80 text-[10px] uppercase font-mono text-neutral-400 border-b border-neutral-800">
+                    <tr>
+                      <th className="p-3">Stake / Player</th>
+                      <th className="p-3">Total Pot</th>
+                      <th className="p-3">Rake %</th>
+                      <th className="p-3">Platform Fee</th>
+                      <th className="p-3 text-emerald-400">Winner Payout</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-800/80 text-neutral-300">
+                    {TIERED_COMMISSION_SCHEDULE.map((item) => (
+                      <tr
+                        key={item.stake}
+                        className={`hover:bg-neutral-900/50 transition-colors ${
+                          calcStake === item.stake ? 'bg-amber-500/10 font-bold text-white' : ''
+                        }`}
+                      >
+                        <td className="p-3 font-bold text-amber-400">₦{item.stake.toLocaleString()}</td>
+                        <td className="p-3">₦{item.pot.toLocaleString()}</td>
+                        <td className="p-3 font-bold text-amber-300">{item.rakePercentFormatted}</td>
+                        <td className="p-3 text-rose-400">₦{item.platformFee.toLocaleString()}</td>
+                        <td className="p-3 font-bold text-emerald-400">₦{item.winnerPayout.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Core Operating Rules */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 text-xs">
+              <div className="p-3 rounded-xl bg-neutral-950 border border-neutral-800 space-y-1">
+                <div className="font-bold text-amber-400 font-mono text-[11px] uppercase">1. Single Deductions</div>
+                <p className="text-[11px] text-neutral-400">Rake is taken automatically from pooled escrow balance before sending winner payout.</p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-neutral-950 border border-neutral-800 space-y-1">
+                <div className="font-bold text-emerald-400 font-mono text-[11px] uppercase">2. Draw Protection</div>
+                <p className="text-[11px] text-neutral-400">If players tie, 100% of stakes are returned to both wallets without platform fees.</p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-neutral-950 border border-neutral-800 space-y-1">
+                <div className="font-bold text-rose-400 font-mono text-[11px] uppercase">3. Fraud Recovery</div>
+                <p className="text-[11px] text-neutral-400">Fake scoreboard attempts forfeit 100% of stake as penalty to compensate winner.</p>
               </div>
             </div>
 

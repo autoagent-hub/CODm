@@ -8,7 +8,8 @@ import {
 
 interface WalletDashboardProps {
   currentUser: UserProfile;
-  onNavigateToFunding: () => void;
+  onNavigateToFunding?: () => void;
+  onDeposit?: (amount: number, method: string) => Promise<void>;
   onOpenCreateBet: () => void;
   onWithdraw: (amount: number, bankDetails: { bankName: string; accountNumber: string; accountName: string }) => Promise<void>;
   onRefresh: () => Promise<void>;
@@ -30,12 +31,21 @@ const NIGERIAN_BANKS = [
 export const WalletDashboard: React.FC<WalletDashboardProps> = ({
   currentUser,
   onNavigateToFunding,
+  onDeposit,
   onOpenCreateBet,
   onWithdraw,
   onRefresh,
 }) => {
   const [filterType, setFilterType] = useState<string>('ALL');
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [depositAmount, setDepositAmount] = useState<number>(2000);
+  const [depositMethod, setDepositMethod] = useState<'transfer' | 'card' | 'ussd'>('transfer');
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [depositSuccess, setDepositSuccess] = useState<string | null>(null);
+  const [depositError, setDepositError] = useState<string | null>(null);
+  const [copiedAccount, setCopiedAccount] = useState(false);
+
   const [withdrawAmount, setWithdrawAmount] = useState<number>(1000);
   const [selectedBank, setSelectedBank] = useState<string>(NIGERIAN_BANKS[0]);
   const [accountNumber, setAccountNumber] = useState<string>('0123456789');
@@ -43,6 +53,41 @@ export const WalletDashboard: React.FC<WalletDashboardProps> = ({
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [withdrawSuccess, setWithdrawSuccess] = useState<string | null>(null);
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
+
+  const virtualAccount = {
+    bank: 'Wema Bank / Moniepoint',
+    accountNumber: '9048201948',
+    accountName: `CODM-STAKE / ${currentUser.codmIgn.toUpperCase()}`,
+  };
+
+  const handleCopyAccount = () => {
+    navigator.clipboard.writeText(virtualAccount.accountNumber);
+    setCopiedAccount(true);
+    setTimeout(() => setCopiedAccount(false), 2000);
+  };
+
+  const handleDepositSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (depositAmount < 500) {
+      setDepositError('Minimum deposit is ₦500');
+      return;
+    }
+    setDepositLoading(true);
+    setDepositError(null);
+    setDepositSuccess(null);
+    try {
+      if (onDeposit) {
+        const methodName = depositMethod === 'transfer' ? 'Bank Transfer (Wema/Moniepoint)' : depositMethod === 'card' ? 'Debit Card' : 'USSD';
+        await onDeposit(depositAmount, methodName);
+      }
+      setDepositSuccess(`₦${depositAmount.toLocaleString()} credited successfully to your escrow wallet!`);
+      setTimeout(() => setShowDepositModal(false), 2000);
+    } catch (err: any) {
+      setDepositError(err.message || 'Deposit failed');
+    } finally {
+      setDepositLoading(false);
+    }
+  };
 
   const filteredTransactions = currentUser.transactions.filter((tx) => {
     if (filterType === 'ALL') return true;
@@ -97,7 +142,7 @@ export const WalletDashboard: React.FC<WalletDashboardProps> = ({
 
         <div className="flex items-center gap-2">
           <button
-            onClick={onNavigateToFunding}
+            onClick={() => setShowDepositModal(true)}
             className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-black rounded-xl text-xs sm:text-sm transition-all shadow-md cursor-pointer flex items-center gap-1.5"
           >
             <ArrowDownLeft className="w-4 h-4" />
@@ -343,6 +388,140 @@ export const WalletDashboard: React.FC<WalletDashboardProps> = ({
                 className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black rounded-xl text-sm transition-all shadow-lg cursor-pointer disabled:opacity-50"
               >
                 {withdrawLoading ? 'Processing Instant Payout...' : `Confirm Cashout of ₦${withdrawAmount.toLocaleString()}`}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Instant Deposit / Funding Modal */}
+      {showDepositModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
+              <h3 className="text-base font-bold font-heading text-white flex items-center gap-2">
+                <ArrowDownLeft className="w-5 h-5 text-amber-400" />
+                <span>Instant Wallet Deposit (Funding)</span>
+              </h3>
+              <button
+                onClick={() => setShowDepositModal(false)}
+                className="text-neutral-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            {depositSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                <span>{depositSuccess}</span>
+              </div>
+            )}
+
+            {depositError && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span>{depositError}</span>
+              </div>
+            )}
+
+            {/* Method Tabs */}
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setDepositMethod('transfer')}
+                className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-center ${
+                  depositMethod === 'transfer'
+                    ? 'bg-amber-400/20 border-amber-400 text-amber-400'
+                    : 'bg-neutral-950 border-neutral-800 text-neutral-400'
+                }`}
+              >
+                Bank Transfer
+              </button>
+              <button
+                type="button"
+                onClick={() => setDepositMethod('card')}
+                className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-center ${
+                  depositMethod === 'card'
+                    ? 'bg-amber-400/20 border-amber-400 text-amber-400'
+                    : 'bg-neutral-950 border-neutral-800 text-neutral-400'
+                }`}
+              >
+                Debit Card
+              </button>
+              <button
+                type="button"
+                onClick={() => setDepositMethod('ussd')}
+                className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-center ${
+                  depositMethod === 'ussd'
+                    ? 'bg-amber-400/20 border-amber-400 text-amber-400'
+                    : 'bg-neutral-950 border-neutral-800 text-neutral-400'
+                }`}
+              >
+                USSD Code
+              </button>
+            </div>
+
+            {/* Virtual Dedicated Account for Instant Transfer */}
+            {depositMethod === 'transfer' && (
+              <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-3">
+                <div className="text-xs text-neutral-400">
+                  Transfer any amount to your dedicated permanent virtual account:
+                </div>
+                <div className="space-y-1 font-mono-nums">
+                  <div className="text-xs text-neutral-400">Bank: <strong className="text-white">{virtualAccount.bank}</strong></div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-black text-amber-400">{virtualAccount.accountNumber}</span>
+                    <button
+                      type="button"
+                      onClick={handleCopyAccount}
+                      className="px-2.5 py-1 rounded bg-neutral-900 border border-neutral-700 text-xs text-neutral-200 hover:text-white"
+                    >
+                      {copiedAccount ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                  <div className="text-xs text-neutral-400">Name: <strong className="text-neutral-200">{virtualAccount.accountName}</strong></div>
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleDepositSubmit} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-neutral-300 block mb-1">
+                  Amount to Fund (₦)
+                </label>
+                <div className="grid grid-cols-4 gap-2 mb-2">
+                  {[1000, 2000, 5000, 10000].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setDepositAmount(amt)}
+                      className={`py-1.5 rounded-lg text-xs font-mono-nums font-bold border ${
+                        depositAmount === amt
+                          ? 'bg-amber-400 text-neutral-950 border-amber-400'
+                          : 'bg-neutral-950 text-neutral-400 border-neutral-800'
+                      }`}
+                    >
+                      ₦{amt.toLocaleString()}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="number"
+                  min={500}
+                  step={500}
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-700 text-white font-mono-nums font-bold text-base focus:border-amber-400 focus:outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={depositLoading || depositAmount < 500}
+                className="w-full py-3 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-black rounded-xl text-sm transition-all shadow-lg cursor-pointer disabled:opacity-50 uppercase tracking-wide"
+              >
+                {depositLoading ? 'Verifying Instant Deposit...' : `Simulate Deposit of ₦${depositAmount.toLocaleString()}`}
               </button>
             </form>
           </div>

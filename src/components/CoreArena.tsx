@@ -14,7 +14,7 @@ interface CoreArenaProps {
   matches: Match[];
   onCreateBet: (data: { stakeAmount: number; gameMode: string; map: string; rules: string[] }) => Promise<void>;
   onJoinMatch: (matchId: string, opponentId: string) => Promise<void>;
-  onSubmitResult: (matchId: string, claim: 'VICTORY' | 'DEFEAT', screenshotBase64?: string) => Promise<void>;
+  onSubmitResult: (matchId: string, claim: 'VICTORY' | 'DEFEAT' | 'DRAW', screenshotBase64?: string) => Promise<void>;
   onCancelMatch: (matchId: string) => Promise<void>;
   onOpenWallet: () => void;
   onRefresh: () => Promise<void>;
@@ -34,8 +34,8 @@ export const CoreArena: React.FC<CoreArenaProps> = ({
   onOpenNewUserOnboarding,
   onOpenCreateBet,
 }) => {
-  // Result submission state
-  const [selectedClaim, setSelectedClaim] = useState<'VICTORY' | 'DEFEAT'>('VICTORY');
+  // Result submission state: supports VICTORY, DEFEAT, and DRAW
+  const [selectedClaim, setSelectedClaim] = useState<'VICTORY' | 'DEFEAT' | 'DRAW'>('VICTORY');
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -103,86 +103,7 @@ export const CoreArena: React.FC<CoreArenaProps> = ({
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-16">
       {/* ------------------------------------------------------------- */}
-      {/* 1. STANDARD ESPORTS PLAYER HUD HEADER                         */}
-      {/* ------------------------------------------------------------- */}
-      <div className="relative overflow-hidden rounded-3xl bg-neutral-900/90 border border-neutral-800 p-5 sm:p-7 shadow-2xl">
-        {/* Subtle background glow */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          {/* Player Calling Card */}
-          <div className="flex items-center gap-4 sm:gap-5">
-            <div className="relative shrink-0">
-              <img
-                src={currentUser.avatar}
-                alt={currentUser.codmIgn}
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover bg-neutral-800 border-2 border-amber-400 shadow-xl"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=200&q=80';
-                }}
-              />
-              <span className="absolute -bottom-2 -right-1 px-2 py-0.5 rounded-md bg-neutral-950 border border-amber-400 text-[10px] font-mono-nums font-black text-amber-400 shadow">
-                LVL 150
-              </span>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-heading font-black text-xl sm:text-3xl text-white tracking-wide uppercase">
-                  {currentUser.codmIgn}
-                </h1>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-400 font-mono text-[11px] font-black tracking-wider flex items-center gap-1">
-                  <Award className="w-3 h-3" />
-                  LEGENDARY TIER
-                </span>
-              </div>
-
-              <div className="text-xs text-neutral-400 font-mono-nums flex flex-wrap items-center gap-3">
-                <span>UID: <strong className="text-neutral-200">{currentUser.codmUid}</strong></span>
-                <span>·</span>
-                <span className="text-amber-400 font-bold font-mono">CLAN: [1V1_PRO]</span>
-              </div>
-
-              {/* Combat Stats Bar */}
-              <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold font-mono-nums">
-                  <Trophy className="w-3.5 h-3.5" />
-                  <span>{currentUser.wins}W - {currentUser.losses}L ({winRate}% Win Rate)</span>
-                </div>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-mono-nums">
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  <span>Winnings: ₦{currentUser.totalWinnings.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Wallet Action Widget */}
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-neutral-800">
-            <div className="p-4 rounded-2xl bg-neutral-950/90 border border-neutral-800 flex-1 sm:flex-none sm:min-w-[200px]">
-              <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider font-mono">
-                AVAILABLE ESCROW WALLET
-              </div>
-              <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono-nums mt-0.5">
-                ₦{currentUser.balance.toLocaleString()}
-              </div>
-            </div>
-
-            <button
-              onClick={onOpenWallet}
-              className="p-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-neutral-950 font-black text-xs sm:text-sm uppercase tracking-wide transition-all shadow-xl hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
-            >
-              <Wallet className="w-4 h-4" />
-              <span>Wallet Dashboard</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ------------------------------------------------------------- */}
-      {/* 2. ACTIVE MATCH ROOM (NORMAL PROPORTIONAL COMPONENT WITH BG)  */}
+      {/* 1. ACTIVE MATCH ROOM (IF PARTICIPATING IN A WAGER)            */}
       {/* ------------------------------------------------------------- */}
       {myActiveMatch && (
         <div className="relative overflow-hidden rounded-2xl bg-neutral-900 border border-amber-500/40 p-5 sm:p-6 shadow-xl space-y-5 group">
@@ -349,32 +270,57 @@ export const CoreArena: React.FC<CoreArenaProps> = ({
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setSelectedClaim('VICTORY')}
-                    className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer border flex items-center justify-center gap-1.5 uppercase ${
+                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer border flex items-center justify-center gap-1.5 uppercase ${
                       selectedClaim === 'VICTORY'
-                        ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 shadow'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400'
+                        ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 shadow-md ring-1 ring-emerald-400/50'
+                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-neutral-200'
                     }`}
                   >
                     <Trophy className="w-3.5 h-3.5" />
-                    <span>I Won Match</span>
+                    <span>I Won</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setSelectedClaim('DEFEAT')}
-                    className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer border flex items-center justify-center gap-1.5 uppercase ${
+                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer border flex items-center justify-center gap-1.5 uppercase ${
                       selectedClaim === 'DEFEAT'
-                        ? 'bg-rose-500/20 border-rose-400 text-rose-400 shadow'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400'
+                        ? 'bg-rose-500/20 border-rose-400 text-rose-400 shadow-md ring-1 ring-rose-400/50'
+                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-neutral-200'
                     }`}
                   >
-                    <span>I Lost Match</span>
+                    <span>I Lost</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedClaim('DRAW')}
+                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer border flex items-center justify-center gap-1.5 uppercase ${
+                      selectedClaim === 'DRAW'
+                        ? 'bg-amber-500/20 border-amber-400 text-amber-400 shadow-md ring-1 ring-amber-400/50'
+                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-neutral-200'
+                    }`}
+                  >
+                    <Shield className="w-3.5 h-3.5" />
+                    <span>Draw / Tie</span>
                   </button>
                 </div>
+
+                {selectedClaim === 'DRAW' && (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300 space-y-1">
+                    <div className="font-bold flex items-center gap-1.5 text-amber-400">
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Draw & Rematch Agreement</span>
+                    </div>
+                    <p className="text-[11px] text-neutral-300">
+                      If both combatants agree or match ends tied, <strong>100% of your ₦{myActiveMatch.stakeAmount.toLocaleString()} stake</strong> is immediately refunded back to your wallet with zero platform fee.
+                    </p>
+                  </div>
+                )}
 
                 {selectedClaim === 'VICTORY' && (
                   <div className="space-y-2 pt-1">
@@ -419,6 +365,11 @@ export const CoreArena: React.FC<CoreArenaProps> = ({
                 >
                   {isSubmitting ? (
                     <span>AI Referee Inspecting Scoreboard...</span>
+                  ) : selectedClaim === 'DRAW' ? (
+                    <>
+                      <Shield className="w-4 h-4" />
+                      <span>Confirm Draw & Refund ₦{myActiveMatch.stakeAmount.toLocaleString()}</span>
+                    </>
                   ) : (
                     <>
                       <ShieldCheck className="w-4 h-4" />
@@ -438,11 +389,17 @@ export const CoreArena: React.FC<CoreArenaProps> = ({
               </div>
 
               <div className="text-lg sm:text-xl font-black text-white font-heading uppercase">
-                MATCH CONCLUDED · WINNER: <span className="text-amber-400">{myActiveMatch.winnerIgn}</span>
+                {myActiveMatch.winnerIgn?.includes('DRAW') ? (
+                  <span>MATCH CONCLUDED · <span className="text-amber-400">DRAW / TIE</span></span>
+                ) : (
+                  <span>MATCH CONCLUDED · WINNER: <span className="text-amber-400">{myActiveMatch.winnerIgn}</span></span>
+                )}
               </div>
 
               <p className="text-xs text-neutral-300 max-w-md mx-auto">
-                {myActiveMatch.winnerId === currentUser.id
+                {myActiveMatch.winnerIgn?.includes('DRAW')
+                  ? `⚖️ Match ended in a draw. 100% of your ₦${myActiveMatch.stakeAmount.toLocaleString()} stake has been refunded to your wallet balance!`
+                  : myActiveMatch.winnerId === currentUser.id
                   ? `🏆 Congratulations! ₦${myActiveMatch.winnerPayout.toLocaleString()} has been paid directly to your wallet!`
                   : `Match concluded. Winner received ₦${myActiveMatch.winnerPayout.toLocaleString()} payout.`}
               </p>

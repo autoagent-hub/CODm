@@ -19,6 +19,9 @@ export interface UserProfile {
   totalWinnings: number;
   wins: number;
   losses: number;
+  draws: number;
+  tier?: string;
+  clan?: string;
   avatar: string;
   transactions: Transaction[];
 }
@@ -30,10 +33,10 @@ export interface MatchPlayer {
   codmUid: string;
   avatar: string;
   staked: boolean;
-  resultClaim?: 'VICTORY' | 'DEFEAT';
+  resultClaim?: 'VICTORY' | 'DEFEAT' | 'DRAW';
   screenshotUrl?: string;
   screenshotAnalysis?: {
-    detectedOutcome: 'VICTORY' | 'DEFEAT' | 'UNCLEAR';
+    detectedOutcome: 'VICTORY' | 'DEFEAT' | 'DRAW' | 'UNCLEAR';
     confidence: number;
     detectedPlayerName?: string | null;
     scoreSummary?: string;

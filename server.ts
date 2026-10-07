@@ -41,6 +41,9 @@ interface UserProfile {
   totalWinnings: number;
   wins: number;
   losses: number;
+  draws: number;
+  tier?: string;
+  clan?: string;
   avatar: string;
   transactions: Array<{
     id: string;
@@ -72,7 +75,7 @@ interface Match {
     codmUid: string;
     avatar: string;
     staked: boolean;
-    resultClaim?: 'VICTORY' | 'DEFEAT';
+    resultClaim?: 'VICTORY' | 'DEFEAT' | 'DRAW';
     screenshotUrl?: string;
     screenshotAnalysis?: any;
     submittedAt?: number;
@@ -84,7 +87,7 @@ interface Match {
     codmUid: string;
     avatar: string;
     staked: boolean;
-    resultClaim?: 'VICTORY' | 'DEFEAT';
+    resultClaim?: 'VICTORY' | 'DEFEAT' | 'DRAW';
     screenshotUrl?: string;
     screenshotAnalysis?: any;
     submittedAt?: number;
@@ -105,8 +108,10 @@ const users: Record<string, UserProfile> = {
   'user_ghost': {
     id: 'user_ghost',
     username: 'Ghost_NG',
-    codmIgn: 'Ghost_NG',
+    codmIgn: 'GHOST_NG',
     codmUid: '6829471928371902',
+    tier: 'LEGENDARY TIER',
+    clan: '[1V1_PRO]',
     email: 'ghost@lagos-codm.com',
     phone: '+234 803 123 4567',
     balance: 10000,
@@ -114,6 +119,7 @@ const users: Record<string, UserProfile> = {
     totalWinnings: 24500,
     wins: 14,
     losses: 3,
+    draws: 1,
     avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
     transactions: [
       {
@@ -130,6 +136,8 @@ const users: Record<string, UserProfile> = {
     username: 'ShadowSniper',
     codmIgn: 'ShadowSniper',
     codmUid: '6948201948271034',
+    tier: 'MASTER V TIER',
+    clan: '[NIGHT_HAWK]',
     email: 'shadow@esports.ng',
     phone: '+234 812 987 6543',
     balance: 5000,
@@ -137,6 +145,7 @@ const users: Record<string, UserProfile> = {
     totalWinnings: 12000,
     wins: 8,
     losses: 5,
+    draws: 0,
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
     transactions: [
       {
@@ -151,6 +160,14 @@ const users: Record<string, UserProfile> = {
 };
 
 const matches: Record<string, Match> = {};
+
+// Helper to calculate tiered rake percentage based on stake amount
+function getRakePercentage(stake: number): number {
+  if (stake >= 10000) return 0.05; // 5% for ₦10,000+
+  if (stake >= 5000) return 0.07;  // 7% for ₦5,000
+  if (stake >= 2500) return 0.08;  // 8% for ₦2,500
+  return 0.10;                     // 10% for ₦1,000
+}
 
 // Helper to generate a room code like CODM-8392-SHP
 function generateRoomCode(mapName: string): string {
@@ -214,6 +231,7 @@ app.post('/api/auth/register', (req, res) => {
     totalWinnings: 0,
     wins: 0,
     losses: 0,
+    draws: 0,
     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(codmIgn.trim())}`,
     transactions: numDeposit > 0 ? [
       {
@@ -275,6 +293,7 @@ app.post('/api/users', (req, res) => {
     totalWinnings: 0,
     wins: 0,
     losses: 0,
+    draws: 0,
     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${codmIgn}`,
     transactions: initialDeposit > 0 ? [
       {
@@ -396,8 +415,10 @@ app.post('/api/matches', (req, res) => {
   const matchId = `match_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
   const roomCode = generateRoomCode(map);
   const potAmount = numStake * 2;
-  const platformFee = Math.round(potAmount * 0.10); // 10% platform fee
+  const rakeRate = getRakePercentage(numStake);
+  const platformFee = Math.round(potAmount * rakeRate);
   const winnerPayout = potAmount - platformFee;
+  const platformFeePercentage = Math.round(rakeRate * 100);
 
   creator.transactions.unshift({
     id: `tx_${Date.now()}`,
@@ -416,7 +437,7 @@ app.post('/api/matches', (req, res) => {
     rules,
     stakeAmount: numStake,
     potAmount,
-    platformFeePercentage: 10,
+    platformFeePercentage,
     platformFee,
     winnerPayout,
     status: 'PENDING_OPPONENT',
@@ -434,7 +455,7 @@ app.post('/api/matches', (req, res) => {
         id: `msg_sys_1`,
         senderId: 'SYSTEM',
         senderName: 'CODM Referee Bot',
-        text: `Match room created with ₦${numStake.toLocaleString()} stake (Pot: ₦${potAmount.toLocaleString()}). Share the invite link with your opponent to lock in their escrow.`,
+        text: `Match room created with ₦${numStake.toLocaleString()} stake (Pot: ₦${potAmount.toLocaleString()}, ${platformFeePercentage}% Tiered Rake: ₦${platformFee.toLocaleString()}, Winner Payout: ₦${winnerPayout.toLocaleString()}). Share the invite link with your opponent.`,
         timestamp: Date.now(),
       },
     ],
@@ -560,8 +581,8 @@ app.post('/api/matches/:id/submit-result', async (req, res) => {
   if (!match) return res.status(404).json({ error: 'Match not found' });
 
   const { playerId, claim, screenshotBase64 } = req.body;
-  if (!['VICTORY', 'DEFEAT'].includes(claim)) {
-    return res.status(400).json({ error: 'Claim must be VICTORY or DEFEAT' });
+  if (!['VICTORY', 'DEFEAT', 'DRAW'].includes(claim)) {
+    return res.status(400).json({ error: 'Claim must be VICTORY, DEFEAT, or DRAW' });
   }
 
   const isCreator = match.creator.id === playerId;
@@ -578,7 +599,7 @@ app.post('/api/matches/:id/submit-result', async (req, res) => {
     detectedOutcome: claim,
     confidence: 0.95,
     detectedPlayerName: playerIgn,
-    scoreSummary: claim === 'VICTORY' ? 'Scoreboard confirmed Victory' : 'Scoreboard confirmed Defeat',
+    scoreSummary: claim === 'VICTORY' ? 'Scoreboard confirmed Victory' : claim === 'DRAW' ? 'Scoreboard confirmed Draw / Tie' : 'Scoreboard confirmed Defeat',
     reasoning: 'Verified by CODM match verification engine.',
   };
 
@@ -603,14 +624,14 @@ The player's In-Game Name (IGN) is: "${playerIgn}".
 Room Code: "${match.roomCode}".
 
 Determine:
-1. Is there a clear "VICTORY" or "DEFEAT" badge/banner?
-2. Is the player's name "${playerIgn}" visible in the scoreboard or victory screen?
-3. What is the detected outcome? (VICTORY, DEFEAT, or UNCLEAR)
+1. Is there a clear "VICTORY", "DEFEAT", or "DRAW / TIE" badge/banner?
+2. Is the player's name "${playerIgn}" visible in the scoreboard or match screen?
+3. What is the detected outcome? (VICTORY, DEFEAT, DRAW, or UNCLEAR)
 4. Confidence level between 0.0 and 1.0.
 
 Respond strictly in valid JSON format:
 {
-  "detectedOutcome": "VICTORY" | "DEFEAT" | "UNCLEAR",
+  "detectedOutcome": "VICTORY" | "DEFEAT" | "DRAW" | "UNCLEAR",
   "confidence": number,
   "detectedPlayerName": string or null,
   "scoreSummary": string,
@@ -655,14 +676,15 @@ Respond strictly in valid JSON format:
   });
 
   // Evaluate match resolution:
-  // Condition 1: Both players submitted
-  // Condition 2: One player claimed Defeat (if someone admits defeat, other player automatically wins immediately!)
   const creatorClaim = match.creator.resultClaim;
   const opponentClaim = match.opponent?.resultClaim;
 
-  let resolveWinner: 'creator' | 'opponent' | 'dispute' | null = null;
+  let resolveWinner: 'creator' | 'opponent' | 'draw' | 'dispute' | null = null;
 
-  if (creatorClaim === 'DEFEAT') {
+  if (creatorClaim === 'DRAW' || opponentClaim === 'DRAW') {
+    // If either or both claim DRAW / Tie -> Resolve as Draw with 100% refund
+    resolveWinner = 'draw';
+  } else if (creatorClaim === 'DEFEAT') {
     // Creator admitted defeat -> opponent wins
     resolveWinner = 'opponent';
   } else if (opponentClaim === 'DEFEAT') {
@@ -676,12 +698,61 @@ Respond strictly in valid JSON format:
       resolveWinner = 'creator';
     } else if (opponentAi === 'VICTORY' && creatorAi === 'DEFEAT') {
       resolveWinner = 'opponent';
+    } else if (creatorAi === 'DRAW' || opponentAi === 'DRAW') {
+      resolveWinner = 'draw';
     } else {
       resolveWinner = 'dispute';
     }
   }
 
-  if (resolveWinner === 'creator' || resolveWinner === 'opponent') {
+  if (resolveWinner === 'draw') {
+    match.status = 'SETTLED';
+    match.winnerId = undefined;
+    match.winnerIgn = 'DRAW (REFUNDED)';
+
+    // Refund escrow 100% to creator
+    const creatorUser = users[match.creator.id];
+    if (creatorUser) {
+      creatorUser.balance += match.stakeAmount;
+      creatorUser.escrowBalance = Math.max(0, creatorUser.escrowBalance - match.stakeAmount);
+      creatorUser.draws = (creatorUser.draws || 0) + 1;
+      creatorUser.transactions.unshift({
+        id: `tx_${Date.now()}_draw_c`,
+        type: 'ESCROW_REFUND',
+        amount: match.stakeAmount,
+        description: `⚖️ Draw in Match #${match.roomCode}: 100% of ₦${match.stakeAmount.toLocaleString()} stake refunded`,
+        timestamp: Date.now(),
+        matchId: match.id,
+      });
+    }
+
+    // Refund escrow 100% to opponent
+    if (match.opponent) {
+      const oppUser = users[match.opponent.id];
+      if (oppUser) {
+        oppUser.balance += match.stakeAmount;
+        oppUser.escrowBalance = Math.max(0, oppUser.escrowBalance - match.stakeAmount);
+        oppUser.draws = (oppUser.draws || 0) + 1;
+        oppUser.transactions.unshift({
+          id: `tx_${Date.now()}_draw_o`,
+          type: 'ESCROW_REFUND',
+          amount: match.stakeAmount,
+          description: `⚖️ Draw in Match #${match.roomCode}: 100% of ₦${match.stakeAmount.toLocaleString()} stake refunded`,
+          timestamp: Date.now(),
+          matchId: match.id,
+        });
+      }
+    }
+
+    match.resolutionNotes = `Match ended in a DRAW / TIE. Escrow stakes (100%) refunded to both players without platform fee deduction.`;
+    match.chatMessages.push({
+      id: `msg_${Date.now()}_draw`,
+      senderId: 'SYSTEM',
+      senderName: 'CODM Referee Bot',
+      text: `⚖️ MATCH ENDED IN A DRAW! Both players' stakes (₦${match.stakeAmount.toLocaleString()} each) have been 100% refunded to their wallet balances.`,
+      timestamp: Date.now(),
+    });
+  } else if (resolveWinner === 'creator' || resolveWinner === 'opponent') {
     const winnerObj = resolveWinner === 'creator' ? match.creator : match.opponent!;
     const loserObj = resolveWinner === 'creator' ? match.opponent! : match.creator;
     const winnerUser = users[winnerObj.id];
@@ -692,7 +763,6 @@ Respond strictly in valid JSON format:
     match.winnerIgn = winnerObj.codmIgn;
 
     // Settle Escrow!
-    // Creator & Opponent escrow deduction
     const creatorUser = users[match.creator.id];
     if (creatorUser) creatorUser.escrowBalance = Math.max(0, creatorUser.escrowBalance - match.stakeAmount);
 

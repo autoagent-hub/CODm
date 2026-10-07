@@ -6,11 +6,16 @@ import sniperShipmentLocal from './images/codm_sniper_shipment_1791303451126.jpg
 import teamTacticalLocal from './images/codm_team_tactical_1791306219906.jpg';
 import trophyPotLocal from './images/codm_trophy_pot_1791303439079.jpg';
 import scoreVictoryLocal from './images/codm_score_victory_1791303464940.jpg';
-import matchRoomBgLocal from './images/codm_match_room_bg_1791331264872.jpg';
+import matchRoomBgLocal from './images/match_room_bg_1791331746985.jpg';
+import appLogoLocal from './images/codm_pro_logo_1791332356607.jpg';
 
 export const CODM_IMAGES = {
+  // App Official Professional Logo Icon Emblem
+  appLogo: appLogoLocal || '/src/assets/images/codm_pro_logo_1791332356607.jpg',
+  appLogoFallback: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=200&q=80',
+
   // Active Match Room Card Background
-  matchRoomBg: matchRoomBgLocal || '/images/codm_match_room_bg_1791331264872.jpg',
+  matchRoomBg: matchRoomBgLocal || '/src/assets/images/match_room_bg_1791331746985.jpg',
   matchRoomBgFallback: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80',
 
   // 1v1 Shipment Card Background
